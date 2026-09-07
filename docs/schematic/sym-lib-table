@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "hat-screen")(type "KiCad")(uri "${KIPRJMOD}/hat-screen.kicad_sym")(options "")(descr "Project symbols for hat-screen"))
+)

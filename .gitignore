@@ -15,3 +15,9 @@
 # Local overrides (secrets, per-board pin tweaks, WiFi creds)
 include/secrets.h
 platformio_local.ini
+
+# KiCad (schematic only -- no PCB in this project)
+*.kicad_prl
+*-backups/
+*.kicad_sch-bak
+fp-info-cache
