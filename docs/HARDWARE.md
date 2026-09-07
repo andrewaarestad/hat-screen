@@ -1,5 +1,10 @@
 # Hardware notes
 
+The drawing that goes with these notes is
+[docs/schematic/](schematic/) — a KiCad schematic with the wire list, the
+power budget and the reasoning behind each pin choice on the sheet. This file
+is the long-form version of the same information.
+
 ## Pin map
 
 XIAO ESP32C3 silkscreen → ESP32-C3 GPIO → function.
@@ -21,9 +26,11 @@ XIAO ESP32C3 silkscreen → ESP32-C3 GPIO → function.
 
 The display's `MISO` is unused; leave it unconnected (`TFT_MISO=-1`).
 
-The pin numbers appear twice — as `-D TFT_*` flags in `platformio.ini` (TFT_eSPI
-resolves them at compile time) and as constants in `include/board_config.h`.
-Change both together.
+The pin numbers appear three times — as `-D TFT_*` flags in `platformio.ini`
+(TFT_eSPI resolves them at compile time), as constants in
+`include/board_config.h`, and on the schematic. Change all three together;
+`docs/schematic/tools/check_pinmap.py` runs in CI and fails the build if they
+drift apart.
 
 ### Backlight pin caveat
 
@@ -107,7 +114,7 @@ so battery voltage has to be brought out yourself:
 
 ```
 BAT+ ──┬── 100k ──┬── 100k ── GND
-       │          │
+       │   (R1)   │   (R2)
     (to XIAO)     └── D0 / GPIO2  (ADC)
 ```
 

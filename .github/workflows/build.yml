@@ -29,3 +29,34 @@ jobs:
 
       - name: Build
         run: pio run -e xiao_esp32c3
+
+  schematic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install KiCad
+        run: |
+          # The stable PPA keeps kicad-cli current; fall back to whatever the
+          # runner's distro ships if it is unavailable.
+          sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases \
+            || echo "KiCad PPA unavailable, using the distro package"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends kicad
+          kicad-cli version
+
+      - name: Check the schematic against the firmware pin map
+        run: python3 docs/schematic/tools/check_pinmap.py
+
+      - name: Export the schematic
+        run: |
+          mkdir -p build/schematic
+          kicad-cli sch export pdf -o build/schematic/hat-screen.pdf \
+            docs/schematic/hat-screen.kicad_sch
+          kicad-cli sch export svg --no-background-color -o build/schematic \
+            docs/schematic/hat-screen.kicad_sch
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schematic
+          path: build/schematic

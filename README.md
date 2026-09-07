@@ -13,7 +13,8 @@ a XIAO ESP32C3 running off a single LiPo cell.
 | Momentary button | Scene switching, wired to `D7` and ground |
 | 2x 100 kΩ resistors | Battery-voltage divider (optional, see below) |
 
-Full pin map, power budget and assembly notes: [docs/HARDWARE.md](docs/HARDWARE.md).
+Schematic: [docs/schematic/](docs/schematic/) ([PDF](docs/schematic/hat-screen.pdf)). Full pin map, power budget and
+assembly notes: [docs/HARDWARE.md](docs/HARDWARE.md).
 
 ## Quick start
 
@@ -60,6 +61,7 @@ src/display/             Display: panel init, GRAM offsets, off-screen canvas
 src/power/               Battery sampling; PowerManager dimming and cutoff
 src/scenes/              MarqueeScene (scrolling text), StatusScene (battery)
 docs/                    Wiring and display notes
+docs/schematic/          KiCad schematic (no PCB), plus the pin-map check
 ```
 
 Scenes draw into a full-frame 16 bpp sprite (~43 kB) which is blitted once per
