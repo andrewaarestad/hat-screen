@@ -3,6 +3,7 @@
 #include "app/Scene.h"
 #include "display/Display.h"
 #include "power/Battery.h"
+#include "power/PowerManager.h"
 #include "scenes/MarqueeScene.h"
 #include "scenes/StatusScene.h"
 
@@ -15,11 +16,11 @@ class App {
  private:
   void pollButton();
   void nextScene();
-  void applyPowerPolicy();
   Scene& current() { return *_scenes[_sceneIndex]; }
 
   Display _display;
   Battery _battery;
+  PowerManager _power;
 
   MarqueeScene _marquee{"HELLO FROM THE HAT"};
   StatusScene _status{_battery};
@@ -32,6 +33,4 @@ class App {
   // Button debounce state.
   bool _buttonWasDown = false;
   uint32_t _buttonChangedMs = 0;
-
-  bool _dimmedForLowBattery = false;
 };

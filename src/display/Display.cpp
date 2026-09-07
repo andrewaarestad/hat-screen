@@ -12,12 +12,25 @@ constexpr int16_t kColOffsetMirrored =
 constexpr int16_t kRowOffsetMirrored =
     GRAM_HEIGHT - PANEL_HEIGHT - PANEL_ROW_OFFSET;
 
+// ST7789 commands used directly, rather than via TFT_eSPI's internal defines.
+constexpr uint8_t kCmdDisplayOff = 0x28;
+constexpr uint8_t kCmdSleepIn = 0x10;
+
 void backlightAttach(int8_t pin) {
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
   ledcAttach(pin, kBacklightFreqHz, kBacklightResBits);
 #else
   ledcSetup(kBacklightChannel, kBacklightFreqHz, kBacklightResBits);
   ledcAttachPin(pin, kBacklightChannel);
+#endif
+}
+
+void backlightDetach(int8_t pin) {
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+  ledcDetach(pin);
+#else
+  (void)pin;
+  ledcDetachPin(pin);
 #endif
 }
 
@@ -114,6 +127,19 @@ void Display::setBacklight(uint8_t duty) {
 void Display::present() {
   if (!_canvasReady) return;
   _canvas.pushSprite(0, 0);
+}
+
+void Display::powerOff() {
+  setBacklight(0);
+  _tft.writecommand(kCmdDisplayOff);
+  _tft.writecommand(kCmdSleepIn);
+
+  // Park the backlight pin low. GPIO21 is not an RTC GPIO, so it goes
+  // high-impedance in deep sleep and cannot be held -- if your panel's BLK
+  // input floats high enough to glow, fit a 100k pulldown on it.
+  backlightDetach(PIN_TFT_BL);
+  pinMode(PIN_TFT_BL, OUTPUT);
+  digitalWrite(PIN_TFT_BL, LOW);
 }
 
 void Display::drawCalibrationFrame() {

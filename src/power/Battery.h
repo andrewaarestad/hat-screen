@@ -14,6 +14,10 @@ class Battery {
   // Cheap; safe to call every frame. Samples at most once every 2 s.
   void update();
 
+  // Forces an immediate sample, ignoring the rate limit. For the boot-time
+  // cutoff check, which cannot wait for the normal cadence.
+  void sampleNow();
+
   bool valid() const { return _valid; }
 
   // Volts at the cell, after undoing the divider.
@@ -23,8 +27,13 @@ class Battery {
   // would spend most of its range in a region the cell passes through quickly.
   uint8_t percent() const;
 
-  // True below roughly 3.4 V: time to dim the backlight and warn.
+  // True below VBAT_LOW_VOLTS: time to dim the backlight and warn.
   bool low() const;
+
+  // True when the reading is trustworthy enough to power the board down over.
+  // A reading below VBAT_PLAUSIBLE_MIN_VOLTS means no cell or no divider, not
+  // a critically flat battery -- see board_config.h.
+  bool cutoffArmed() const;
 
  private:
   float readVolts() const;

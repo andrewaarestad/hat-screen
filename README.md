@@ -57,7 +57,7 @@ include/board_config.h   Pin map, panel geometry, timing constants
 src/main.cpp             setup()/loop()
 src/app/                 App (frame loop, input, scene switching) + Scene base
 src/display/             Display: panel init, GRAM offsets, off-screen canvas
-src/power/               Battery: divider sampling, LiPo discharge curve
+src/power/               Battery sampling; PowerManager dimming and cutoff
 src/scenes/              MarqueeScene (scrolling text), StatusScene (battery)
 docs/                    Wiring and display notes
 ```
@@ -93,6 +93,7 @@ make sense to build:
 - [ ] BLE or WiFi captive portal to set the marquee text from a phone
 - [ ] Persist text and brightness in NVS across power cycles
 - [ ] Bitmap / sprite-sheet animation scene
+- [x] Low-voltage cutoff to protect the cell (see docs/HARDWARE.md)
 - [ ] Light sleep between frames and a proper power budget measurement
-- [ ] Low-battery cutoff to protect the cell below 3.0 V
+- [ ] Move the button to an RTC GPIO so it can wake the hat from deep sleep
 - [ ] IMU on the free I2C pair (D4/D5) for tilt-reactive effects

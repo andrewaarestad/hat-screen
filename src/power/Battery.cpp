@@ -8,7 +8,6 @@ namespace {
 
 constexpr uint32_t kSampleIntervalMs = 2000;
 constexpr uint8_t kOversample = 8;
-constexpr float kLowVoltage = 3.40f;
 
 // Exponential smoothing keeps the reading from jumping when the backlight PWM
 // or a WiFi transmit burst sags the rail.
@@ -42,10 +41,13 @@ float Battery::readVolts() const {
 
 void Battery::update() {
   if (!VBAT_SENSE_FITTED) return;
+  if (_valid && (millis() - _lastSampleMs) < kSampleIntervalMs) return;
+  sampleNow();
+}
 
-  const uint32_t now = millis();
-  if (_valid && (now - _lastSampleMs) < kSampleIntervalMs) return;
-  _lastSampleMs = now;
+void Battery::sampleNow() {
+  if (!VBAT_SENSE_FITTED) return;
+  _lastSampleMs = millis();
 
   const float sample = readVolts();
   _volts = _valid ? (_volts + kSmoothing * (sample - _volts)) : sample;
@@ -67,4 +69,8 @@ uint8_t Battery::percent() const {
   return 100;
 }
 
-bool Battery::low() const { return _valid && _volts < kLowVoltage; }
+bool Battery::low() const { return _valid && _volts < VBAT_LOW_VOLTS; }
+
+bool Battery::cutoffArmed() const {
+  return _valid && _volts > VBAT_PLAUSIBLE_MIN_VOLTS;
+}

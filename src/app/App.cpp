@@ -6,17 +6,21 @@
 
 namespace {
 constexpr uint32_t kDebounceMs = 30;
-constexpr uint8_t kLowBatteryBacklight = 40;
 }  // namespace
 
 bool App::begin() {
   pinMode(PIN_BUTTON, INPUT_PULLUP);
+  _battery.begin();
+
+  // Before the panel is lit: if this boot is a wake from a low-voltage sleep
+  // and the cell has not recovered, this goes straight back to sleep.
+  PowerManager::guardBoot(_battery);
 
   if (!_display.begin()) {
     Serial.println("[hat] display init failed (canvas allocation?)");
     return false;
   }
-  _battery.begin();
+  _power.begin(_display, _battery);
 
 #ifdef HAT_CALIBRATE
   // Held here forever on purpose: adjust PANEL_COL_OFFSET / PANEL_ROW_OFFSET in
@@ -33,6 +37,9 @@ bool App::begin() {
 }
 
 void App::pollButton() {
+  // Once the low-voltage notice is up, the only thing left to do is sleep.
+  if (_power.state() == PowerManager::State::Shutdown) return;
+
   const bool down = digitalRead(PIN_BUTTON) == LOW;
   const uint32_t now = millis();
 
@@ -58,15 +65,6 @@ void App::nextScene() {
 #endif
 }
 
-// Dim hard when the cell gets low: the backlight is the biggest single draw, so
-// this buys meaningful runtime and doubles as a visible warning.
-void App::applyPowerPolicy() {
-  const bool low = _battery.low();
-  if (low == _dimmedForLowBattery) return;
-  _dimmedForLowBattery = low;
-  _display.setBacklight(low ? kLowBatteryBacklight : BACKLIGHT_DEFAULT);
-}
-
 void App::loop() {
   const uint32_t now = millis();
   const uint32_t dtMs = now - _lastFrameMs;
@@ -80,7 +78,9 @@ void App::loop() {
 
   pollButton();
   _battery.update();
-  applyPowerPolicy();
+
+  // Returns false once the low-voltage shutdown owns the display.
+  if (!_power.update(dtMs)) return;
 
   if (SCENE_AUTO_CYCLE_MS > 0) {
     _sceneElapsedMs += dtMs;

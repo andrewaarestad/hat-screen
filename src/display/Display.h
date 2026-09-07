@@ -31,6 +31,10 @@ class Display {
   // Blit the canvas to the panel.
   void present();
 
+  // Backlight off, panel into its own sleep mode, backlight pin parked low.
+  // For deep sleep -- the panel's own controller draws real current otherwise.
+  void powerOff();
+
   int16_t width() const { return _width; }
   int16_t height() const { return _height; }
 

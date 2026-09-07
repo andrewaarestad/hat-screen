@@ -46,6 +46,40 @@ static constexpr float VBAT_DIVIDER_RATIO = 2.0f;
 // state instead of reporting a floating pin as a dead cell.
 static constexpr bool VBAT_SENSE_FITTED = true;
 
+// ---- Battery thresholds -----------------------------------------------------
+// Dim the backlight. Not urgent, just a visible hint that the hat is on its way
+// down and the biggest single load is worth trimming.
+static constexpr float VBAT_LOW_VOLTS = 3.40f;
+
+// Start the shutdown sequence. A 1S LiPo's absolute floor is ~3.0 V, but these
+// readings are taken under load (the cell sags) through an ADC that is only
+// good to a few percent, so cut off with margin rather than chasing the last
+// few minutes of runtime.
+static constexpr float VBAT_CUTOFF_VOLTS = 3.20f;
+
+// After a low-voltage sleep, only resume above this. Well clear of the cutoff
+// so the hat cannot oscillate: an unloaded cell recovers a little on its own,
+// and only a charger reliably pushes it this high.
+static constexpr float VBAT_RESUME_VOLTS = 3.70f;
+
+// Below this is not a flat cell, it is a missing one. A 1S LiPo this low is
+// already destroyed, and the XIAO's regulator would have browned out long
+// before -- so a reading here means no divider or no battery, and the cutoff
+// stays disarmed. Without this guard, flashing a board with no cell fitted
+// would put it straight to sleep.
+static constexpr float VBAT_PLAUSIBLE_MIN_VOLTS = 2.50f;
+
+// The reading must stay below the cutoff continuously for this long. Guards
+// against a transient sag from a WiFi burst or a backlight step.
+static constexpr uint32_t VBAT_CUTOFF_CONFIRM_MS = 8000;
+
+// How long the "shutting down" notice stays on screen before sleeping.
+static constexpr uint32_t VBAT_SHUTDOWN_NOTICE_MS = 5000;
+
+// Deep sleep wakes this often to re-check the cell, so the hat comes back on
+// its own once it is put on a charger.
+static constexpr uint32_t VBAT_SLEEP_RECHECK_S = 300;
+
 // ---- Panel geometry ---------------------------------------------------------
 // The ST7789 always has a 240x320 GRAM. This panel only shows a 76x284 window
 // into it, so every drawing operation has to be offset. We assume the window is
